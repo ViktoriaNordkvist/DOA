@@ -25,7 +25,6 @@ struct table_entry {
 table *table_empty(compare_function *key_cmp_func, free_function key_free_func,
 				   free_function value_free_func)
 {
-
 	// Allocate the table header.
 	table *t = calloc(1, sizeof(table));
 
@@ -41,21 +40,25 @@ table *table_empty(compare_function *key_cmp_func, free_function key_free_func,
 
 }
 
+
 bool table_is_empty(const table *t)
 {
 	// Iterate over all elements. Call print_func on keys/values.
-	for(int i = array_1d_low(t->entries); i <= array_1d_high(t->entries); i++){
-		if (array_1d_has_value(t->entries, i)){
+	int pos = array_1d_low(t->entries);
+
+	while(pos <= array_1d_high(t->entries)){
+		if (array_1d_has_value(t->entries, pos)){
 			// If the array is not empty, and therefore has a value, then we
 			// return false
 			return false;
 	 	}
+
+	pos++;
 	}
+
 	//If the array is empty then we return true
 	return true;
 }
-
-
 
 
 void table_insert(table *t, void *key, void *value)
@@ -63,8 +66,8 @@ void table_insert(table *t, void *key, void *value)
 	int pos = array_1d_low(t->entries);
 	struct table_entry *entry = array_1d_inspect_value(t->entries, pos);
 
-	for(int i = array_1d_low(t->entries); i <= array_1d_high(t->entries); i++){
-		if(t->key_cmp_func(entry->key, key) == 0){  // kan man använda key_cmp_func??
+	while(pos <= array_1d_high(t->entries)){
+		if(t->key_cmp_func(entry->key, key) == 0){
 			printf("This key already exists, try again");
 		}
 		else{
@@ -77,6 +80,8 @@ void table_insert(table *t, void *key, void *value)
 			entry->value = value;
 			array_1d_set_value(t->entries, entry, array_1d_low(t->entries));
 		}
+
+	pos++;
 	}
 }
 
@@ -85,7 +90,7 @@ void *table_lookup(const table *t, const void *key)
 	// Iterate over the list. Return first match.
 	int pos = array_1d_low(t->entries);
 
-	while(!array_1d_high(t->entries)) {
+	while(pos <= array_1d_high(t->entries)) {
 		// Inspect the table entry
 		struct table_entry *entry = array_1d_inspect_value(t->entries, pos);
 		// Check if the entry key matches the search key.
@@ -118,7 +123,7 @@ void table_remove(table *t, const void *key)
 	int pos = array_1d_low(t->entries);
 
 	// Iterate over the array. Remove any entries with matching keys.
-	while(!array_1d_high(t->entries)) {
+	while(pos <= array_1d_high(t->entries)) {
 		// Inspect the table entry
 		struct table_entry *entry = array_1d_inspect_value(t->entries, pos);
 
@@ -145,6 +150,17 @@ void table_remove(table *t, const void *key)
 			array_1d_set_value(t->entries, NULL, pos); //IS DIS OK???????????????
 			// Deallocate the table entry structure.
 			free(entry);
+
+			// vill kolla om nästa plats har ett värde, om det gör det då är inte den tomma platsen sist. då måste jag fylla den tomma platsen med någonting.
+			while(array_1d_has_value(t->entries, pos + 1 )){
+				struct table_entry *temp = array_1d_inspect_value(t->entries, pos+1);
+				//
+				array_1d_set_value(t->entries, temp, pos);
+				array_1d_set_value(t->entries, NULL, pos + 1);
+				pos++;
+				free(temp);
+			}
+
 		} else {
 			// No match, move on to next element in the list.
 			pos++;
@@ -161,7 +177,7 @@ void table_kill(table *t)
 	// Iterate over the list. Destroy all elements.
 	int pos = array_1d_low(t->entries);
 
-	while(!array_1d_high(t->entries)) {
+	while(pos <= array_1d_high(t->entries)) {
 		// Inspect the key/value pair.
 		struct table_entry *entry = array_1d_inspect_value(t->entries, pos);
 		// Free key and/or value if given the authority to do so.
@@ -188,7 +204,7 @@ void table_print(const table *t, inspect_callback_pair print_func)
 	// Iterate over all elements. Call print_func on keys/values.
 	int pos = array_1d_low(t->entries);
 
-	while(!array_1d_high(t->entries)) {
+	while(pos <= array_1d_high(t->entries)) {
 		struct table_entry *entry = array_1d_inspect_value(t->entries, pos);
 		// Call print_func
 		array_1d_print(entry->key, entry->value);
