@@ -27,11 +27,11 @@ table *table_empty(compare_function *key_cmp_func, free_function key_free_func,
 {
 	//printf("table_empty\n");
 	// Allocate the table header.
-	table *t = calloc(1, sizeof(table));
+	table *t = calloc(1, sizeof(table)); //VALGRIND FEL
 
-	t->size= 10; //funkar detta, ska jag ha detta istället?
+	t->size= 1000; //funkar detta, ska jag ha detta istället?
 	// Create the array to hold the table_entry-ies.
-	t->entries = array_1d_create(0, t->size, NULL);
+	t->entries = array_1d_create(0, t->size, NULL);		//VALGRINDFEL
 	// Store the key compare function and key/value free functions.
 	t->key_cmp_func = key_cmp_func;
 	t->key_free_func = key_free_func;
@@ -66,8 +66,7 @@ void table_insert(table *t, void *key, void *value)
 	//printf("table_insert\n");
 	int pos = array_1d_low(t->entries);
 	bool same_key = false;
-	struct table_entry *a = malloc(sizeof(struct table_entry));
-
+	struct table_entry *a = malloc(sizeof(struct table_entry));		//VALGRINDFEL
 	a->key = key;
 	a->value = value;
 
@@ -95,6 +94,7 @@ void table_insert(table *t, void *key, void *value)
 	if(!same_key){
 		array_1d_set_value(t->entries, a, pos);
 	}
+	free(a);
 }
 
 void *table_lookup(const table *t, const void *key)
@@ -207,7 +207,7 @@ void table_kill(table *t)
 		// Deallocate the table entry structure.
 		free(entry);
 	}
-
+	free(entry); //ÄR DETTA RÄTT?
 	// Kill what's left of the list...
 	array_1d_kill(t->entries);
 	// ...and the table.
