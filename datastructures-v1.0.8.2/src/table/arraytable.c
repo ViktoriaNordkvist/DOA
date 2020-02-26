@@ -207,7 +207,6 @@ void table_kill(table *t)
 		// Deallocate the table entry structure.
 		free(entry);
 	}
-	free(entry); //ÄR DETTA RÄTT?
 	// Kill what's left of the list...
 	array_1d_kill(t->entries);
 	// ...and the table.
