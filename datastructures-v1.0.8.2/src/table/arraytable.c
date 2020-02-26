@@ -94,7 +94,6 @@ void table_insert(table *t, void *key, void *value)
 	if(!same_key){
 		array_1d_set_value(t->entries, a, pos);
 	}
-	free(a);
 }
 
 void *table_lookup(const table *t, const void *key)
